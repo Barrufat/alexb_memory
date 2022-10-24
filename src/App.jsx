@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import CartaSuelta from './components/CartaSuelta.jsx'
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+// import Contador from './components/contador.jsx'
 import './App.css'
 
 const imagesIni = [
@@ -48,10 +50,11 @@ function inicia(llista) {
   return imagesInicials;
 }
 
-
 const titulo = "/img/titulo.png";
 
 function App() {
+
+
 
   const [images, setImages] = useState(imagesIni)
   const [cartas, setCartas] = useState([])
@@ -60,9 +63,16 @@ function App() {
   const [jugada2, setJugada2] = useState(null)
   const [fallo, setFallo] = useState(false)
   const [estado, setEstado] = useState(false)
+  const [contador, setContador] = useState(0);
+  const [abierto, setAbierto] = useState(false);
+  const [inicio, setInicio] = useState(false);
 
   const barajarCartas = () => {
-    
+
+    setInicio(true);
+    setContador(0);
+    setAbierto(false);
+
     setJugada1(null);
     setJugada2(null);
     let imatgesInici = inicia(images)
@@ -76,8 +86,32 @@ function App() {
 
     setCartas(cartasBarajadas)
     setTurno(0)
-
   }
+
+  useEffect(() => {
+    if (inicio) {
+      const timerID = setInterval(() => { Tick() }, 1000);
+      // console.log({ contador })
+
+      return () => {
+        clearInterval(timerID);
+      }
+    }
+  }, [inicio, contador]);
+
+  const Tick = () => {
+    setContador(contador + 1)
+  }
+
+  useEffect(() => {
+    if (contador > 20) {
+      setAbierto(true);
+      barajarCartas();
+      setContador(0);
+      setInicio(false);
+      console.log('Tiempo agotado')
+    }
+  }, [contador])
 
   const jugada = (carta) => {
     if (fallo === true) {
@@ -113,19 +147,22 @@ function App() {
   }, [estado])
 
   return (
-    <>
-      <div>
-        <img className="titulo" src={titulo} alt="Memory Time" />
-      </div>
-      <button onClick={barajarCartas}>Barajar</button>
-
+    <div className='contenedor'>
+      <img className="titulo" src={titulo} alt="Memory Time" />
+      <h1>TICK TACK: {contador} </h1>
+      <Modal isOpen={abierto}>
+      <h1>GAME OVER BITCH!</h1>
+      </Modal>
       <div className="rejilla">
         {cartas.map(carta => (
           <CartaSuelta className="carta" key={carta.id} carta={carta} jugada={jugada} jugada2={jugada2} jugada1={jugada1} />
         ))}
       </div>
+      <button onClick={barajarCartas}>Barajar</button>
       <h1 className="turno">Turnos: {turno}</h1>
-    </>
+    </div>
+
+
   )
 };
 export default App;
